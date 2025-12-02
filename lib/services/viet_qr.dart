@@ -307,11 +307,25 @@ class VietQR {
     int crc = 0xffff;
     for (int i = 0; i < str.length; i++) {
       int c = str.codeUnitAt(i);
-      int j = (c ^ (crc >> 8)) & 0xff;
-      crc = crcTable[j] ^ (crc << 8);
+      crc = (crcTable[((crc >> 8) ^ c) & 0xff] ^ (crc << 8)) & 0xffff;
     }
 
     return crc & 0xffff;
+  }
+
+  String genCRCCode(String content) {
+    final crcCode = calcCRC(content).toRadixString(16).toUpperCase();
+    return crcCode.padLeft(4, '0');
+  }
+
+  bool verifyCRC(String content) {
+    if (content.length < 4) return false;
+
+    final checkContent = content.substring(0, content.length - 4);
+    final crcCode = content.substring(content.length - 4).toUpperCase();
+
+    final genCrcCode = genCRCCode(checkContent);
+    return crcCode == genCrcCode;
   }
 
   String build() {
